@@ -59,10 +59,13 @@
             <p>Choose an option:</p>
             <div class="resume-actions">
                 <button id="viewResumeBtn" class="view-btn">View Resume</button>
-                <a id="downloadResumeBtn" href="/content/resume.pdf" download="AswiN_Resume.pdf" class="download-btn">Download Resume</a>
+                <a id="downloadResumeBtn" href="resume.pdf" download="AswiN_Resume.pdf" class="download-btn">Download Resume</a>
             </div>
             <div id="resumePreview" class="resume-preview">
-                <iframe id="resumeFrame" src="/placeholder.svg" frameborder="0"></iframe>
+                <object id="resumeObject" data="" type="application/pdf" width="100%" height="100%">
+                    <p>It appears you don't have a PDF plugin for this browser. 
+                    No worries, you can <a id="fallbackLink" href="resume.pdf" target="_blank">click here to download the PDF file.</a></p>
+                </object>
             </div>
         </div>
     </div>
