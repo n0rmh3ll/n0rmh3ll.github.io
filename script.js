@@ -5,9 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     var viewBtn = document.getElementById("viewResumeBtn");
     var downloadBtn = document.getElementById("downloadResumeBtn");
     var resumePreview = document.getElementById("resumePreview");
-    var resumeFrame = document.getElementById("resumeFrame");
+    var resumeObject = document.getElementById("resumeObject");
+    var fallbackLink = document.getElementById("fallbackLink");
 
-    var pdfPath = "/content/resume.pdf";
+    var pdfPath = "resume.pdf";
 
     btn.onclick = function() {
         modal.style.display = "block";
@@ -16,22 +17,21 @@ document.addEventListener('DOMContentLoaded', function() {
     span.onclick = function() {
         modal.style.display = "none";
         resumePreview.style.display = "none";
+        resumeObject.data = "";
     }
 
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
             resumePreview.style.display = "none";
+            resumeObject.data = "";
         }
     }
 
     viewBtn.onclick = function() {
-        if (isMobile()) {
-            window.open(pdfPath, '_blank');
-        } else {
-            resumePreview.style.display = "block";
-            resumeFrame.src = pdfPath;
-        }
+        resumePreview.style.display = "block";
+        resumeObject.data = pdfPath;
+        fallbackLink.href = pdfPath;
     }
 
     downloadBtn.onclick = function(event) {
@@ -42,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function isMobile() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+            || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     }
 });
