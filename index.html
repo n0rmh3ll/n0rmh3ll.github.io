@@ -19,7 +19,7 @@
         </button>
 
         <div class="profile-image">
-            <img src="./content/profile-pic.png" alt="Profile" width="192" height="192">
+            <img src="./content/profile=pic.png" alt="Profile" width="192" height="192">
         </div>
 
         <h1>AswiN B</h1>
@@ -56,10 +56,13 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Resume</h2>
-            <p>Click the buttons below to view or download the resume:</p>
+            <p>Choose an option:</p>
             <div class="resume-actions">
-                <a href="./content/resume.pdf" target="_blank" rel="noopener noreferrer" class="view-btn">View Resume</a>
-                <a href="./content/resume.pdf" download="AswiN_Resume.pdf" class="download-btn">Download Resume</a>
+                <button id="viewResumeBtn" class="view-btn">View Resume</button>
+                <a id="downloadResumeBtn" href="/content/resume.pdf" download="AswiN_Resume.pdf" class="download-btn">Download Resume</a>
+            </div>
+            <div id="resumePreview" class="resume-preview">
+                <iframe id="resumeFrame" src="/placeholder.svg" frameborder="0"></iframe>
             </div>
         </div>
     </div>
