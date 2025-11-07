@@ -1,0 +1,34 @@
+baseURL: "https://n0rmh3ll.github.io/"
+publishDir: "public"
+languageCode: en-us
+title: "n0rmh3ll"
+theme: PaperMod
+
+params:
+  defaultTheme: dark
+  disableThemeToggle: true
+
+  homeInfoParams:
+    Title: "n0rmh3ll"
+    Content: "Pentester. Red-Team Operator. I break things and fix them."
+
+  socialIcons:
+    - name: linkedin
+      url: "https://linkedin.com/in/rootaswin"
+    - name: github
+      url: "https://github.com/n0rmh3ll"
+    - name: x
+      url: "https://x.com/n0rmh3ll"
+    - name: email
+      url: "mailto:rootaswin@gmail.com"
+
+menu:
+  main:
+    - identifier: home
+      name: Home
+      url: /
+      weight: 10
+    - identifier: posts
+      name: Blog
+      url: /posts/
+      weight: 20

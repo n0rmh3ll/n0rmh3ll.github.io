@@ -1,0 +1,40 @@
+{{ define "main" }}
+
+<style>
+  .homepage-container img {
+    transition: filter 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+  }
+  .homepage-container img:hover {
+    box-shadow: 0 0 18px var(--primary),
+                0 0 32px var(--primary),
+                0 0 48px rgba(0,255,140,0.6);
+    transform: scale(1.05);
+    filter: brightness(1.15);
+  }
+</style>
+
+<div class="homepage-container" style="text-align:center; margin-top: 40px;">
+
+  <div style="display:flex; justify-content:center; width:100%; margin-top: 100px;">
+    <img src="/content/profile-pic.png" 
+         alt="Profile" 
+         width="180" height="180" 
+         style="border-radius:50%; border:3px solid var(--primary); transform: translateX(0px);">
+  </div>
+
+  <h1 style="margin-top:60px;">AswiN B</h1>
+  <p class="subtitle">Security Engineer | Pentester</p>
+
+<div style="margin-top:30px;">
+  {{ partial "social_icons.html" (dict "align" "center" "socialIcons" .Site.Params.socialIcons) }}
+</div>
+
+
+
+  <p style="margin-top:35px;">
+    <a class="btn" href="/posts/">👉 Enter Blog</a>
+  </p>
+
+</div>
+
+{{ end }}

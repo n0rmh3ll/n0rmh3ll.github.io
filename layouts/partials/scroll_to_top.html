@@ -1,0 +1,12 @@
+<button id="scrollToTop" style="display:none;position:fixed;bottom:25px;right:25px;padding:8px 12px;font-size:18px;border-radius:4px;border:none;background:#333;color:#fff;cursor:pointer;">↑</button>
+
+<script>
+document.addEventListener("scroll", () => {
+  const btn = document.getElementById("scrollToTop");
+  btn.style.display = window.scrollY > 300 ? "block" : "none";
+});
+
+document.getElementById("scrollToTop").addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
