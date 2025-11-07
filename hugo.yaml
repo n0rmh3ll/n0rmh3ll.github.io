@@ -32,3 +32,10 @@ menu:
       name: Blog
       url: /posts/
       weight: 20
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+    - Sitemap
