@@ -16,14 +16,14 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v3
         with:
-          submodules: true  # ✅ ensures PaperMod theme loads
+          submodules: true
           fetch-depth: 0
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: latest
-          extended: true   # ✅ required for PaperMod
+          extended: true
 
       - name: Build
         run: hugo --gc --minify
@@ -31,6 +31,6 @@ jobs:
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./public
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
