@@ -1,0 +1,82 @@
+/* === GLOBAL === */
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--theme);
+  color: var(--primarytext);
+  font-family: var(--font-family);
+}
+
+/* === HOMEPAGE WRAPPER === */
+.homepage-container {
+  margin-top: 60px;
+  min-height: calc(100vh - 140px); /* centers visually */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* === PROFILE IMAGE (Shift Right + Resize) === */
+.profile-pic {
+  width: 150px;     /* Adjust size */
+  height: 150px;
+  border-radius: 50%;
+  border: 3px solid var(--primary);
+  object-fit: cover;
+  transform: translateX(40px); /* Moves image slightly right */
+}
+
+/* === TEXT === */
+h1 {
+  font-size: 2rem;
+  margin-top: 20px;
+}
+
+.subtitle {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+/* === SOCIAL LINKS === */
+.social-icons {
+  margin-top: 18px;
+  display: flex;
+  gap: 20px;
+  font-size: 0.95rem;
+}
+
+.social-icons a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.social-icons a:hover {
+  opacity: 0.7;
+}
+
+/* === BUTTON === */
+.btn {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.3s;
+}
+
+.btn:hover {
+  opacity: 0.7;
+}
+
+/* Neon Glow on Profile Image Hover */
+.homepage-container img {
+  transition: filter 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+}
+
+.homepage-container img:hover {
+  box-shadow: 0 0 18px var(--primary), 
+              0 0 32px var(--primary), 
+              0 0 48px rgba(0,255,140,0.6);
+  transform: scale(1.05);
+  filter: brightness(1.15);
+}
