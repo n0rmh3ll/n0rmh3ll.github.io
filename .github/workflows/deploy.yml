@@ -5,25 +5,32 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+        with:
+          submodules: true  # ✅ ensures PaperMod theme loads
+          fetch-depth: 0
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: "latest"
-          extended: true
+          hugo-version: latest
+          extended: true   # ✅ required for PaperMod
 
-      - name: Build site
-        run: hugo --minify
+      - name: Build
+        run: hugo --gc --minify
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
           publish_branch: gh-pages
+          publish_dir: ./public
