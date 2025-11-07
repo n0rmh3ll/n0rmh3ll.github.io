@@ -8,7 +8,7 @@ showToc: true
 description: "Full detailed walkthrough of the Crocc Crew room on TryHackMe"
 ---
 ![alt text](hero.png)
-
+    
 | **Room Link** | https://tryhackme.com/room/crocccrew |
 |---|---|
 | **Difficulty** | Insane |
