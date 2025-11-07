@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>How I Recovered My Kali &#43; Windows Dual Boot After a BIOS Update Broke GRUB | n0rmh3ll</title>
+<meta name="keywords" content="restore grub, kali dual boot, windows grub missing, fix bootloader, uefi boot repair, kali windows dualboot fix">
+<meta name="description" content="A complete step-by-step guide to restoring GRUB after a BIOS update removes Kali Linux from boot menu. No data loss. Detailed troubleshooting walkthrough.">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/grub-fix-dualboot/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css" integrity="sha256-4V5FDfQXl84mIlf&#43;ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/grub-fix-dualboot/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="n0rmh3ll (Alt + H)">n0rmh3ll</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      How I Recovered My Kali &#43; Windows Dual Boot After a BIOS Update Broke GRUB
+    </h1>
+    <div class="post-description">
+      A complete step-by-step guide to restoring GRUB after a BIOS update removes Kali Linux from boot menu. No data loss. Detailed troubleshooting walkthrough.
+    </div>
+    <div class="post-meta"><span title='2025-11-07 00:00:00 +0000 UTC'>November 7, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#the-situation" aria-label="The Situation">The Situation</a></li>
+                <li>
+                    <a href="#-understanding-what-happened" aria-label="🧠 Understanding What Happened">🧠 Understanding What Happened</a></li>
+                <li>
+                    <a href="#-goal" aria-label="💡 Goal">💡 Goal</a></li>
+                <li>
+                    <a href="#step-1--boot-into-kali-live-mode" aria-label="Step 1 — Boot Into Kali Live Mode">Step 1 — Boot Into Kali Live Mode</a></li>
+                <li>
+                    <a href="#step-2--identify-my-linux-and-efi-partitions" aria-label="Step 2 — Identify My Linux and EFI Partitions">Step 2 — Identify My Linux and EFI Partitions</a></li>
+                <li>
+                    <a href="#step-3--mount-kali-system-and-enter-it" aria-label="Step 3 — Mount Kali System and Enter It">Step 3 — Mount Kali System and Enter It</a></li>
+                <li>
+                    <a href="#step-4--reinstall-grub" aria-label="Step 4 — Reinstall GRUB">Step 4 — Reinstall GRUB</a></li>
+                <li>
+                    <a href="#step-5--the-critical-part-i-almost-missed" aria-label="Step 5 — The Critical Part I Almost Missed">Step 5 — The Critical Part I Almost Missed</a></li>
+                <li>
+                    <a href="#step-6--recreate-the-grub-uefi-boot-entry" aria-label="Step 6 — Recreate the GRUB UEFI Boot Entry">Step 6 — Recreate the GRUB UEFI Boot Entry</a></li>
+                <li>
+                    <a href="#step-7--make-kali-grub-boot-first" aria-label="Step 7 — Make Kali (GRUB) Boot First">Step 7 — Make Kali (GRUB) Boot First</a></li>
+                <li>
+                    <a href="#step-8--reboot-without-usb" aria-label="Step 8 — Reboot (Without USB)">Step 8 — Reboot (Without USB)</a></li>
+                <li>
+                    <a href="#-final-state" aria-label="✅ Final State">✅ Final State</a></li>
+                <li>
+                    <a href="#-bonus-prevent-this-happening-again" aria-label="🛡️ Bonus: Prevent This Happening Again">🛡️ Bonus: Prevent This Happening Again</a></li>
+                <li>
+                    <a href="#conclusion" aria-label="Conclusion">Conclusion</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><hr>
+<h2 id="the-situation">The Situation<a hidden class="anchor" aria-hidden="true" href="#the-situation">#</a></h2>
+<p>I woke up one fine day, powered on my laptop, expecting the usual <strong>GRUB menu</strong> where I choose between <strong>Kali Linux</strong> and <strong>Windows 11</strong>. But instead, the system <strong>booted straight into Windows</strong>.</p>
+<p>No GRUB. No Kali. No mercy.</p>
+<p>I opened my BIOS boot menu hoping to manually select Kali, but the only things listed were:</p>
+<pre tabindex="0"><code>Windows Boot Manager
+EFI PXE Network (which I don&#39;t use)
+</code></pre><p>That’s when I realized: <strong>The BIOS update I recently installed wiped my GRUB boot entry.</strong></p>
+<p>My data was still there — just the bootloader had vanished.</p>
+<hr>
+<h2 id="-understanding-what-happened">🧠 Understanding What Happened<a hidden class="anchor" aria-hidden="true" href="#-understanding-what-happened">#</a></h2>
+<p>Your system uses UEFI firmware to remember boot entries.
+When you dual boot, it looks like this:</p>
+<pre tabindex="0"><code>[UEFI Firmware]
+      |
+      v
++-----------------+
+| GRUB Bootloader  |
++-----------------+
+   |          |
+   v          v
+Kali Linux   Windows
+</code></pre><p>But after the BIOS update:</p>
+<pre tabindex="0"><code>[UEFI Firmware]
+      |
+      v
++------------------------+
+| Windows Boot Manager   |
++------------------------+
+           |
+           v
+       boots Windows only
+</code></pre><p>GRUB wasn’t deleted — its <strong>boot entry</strong> was just erased.</p>
+<hr>
+<h2 id="-goal">💡 Goal<a hidden class="anchor" aria-hidden="true" href="#-goal">#</a></h2>
+<p>Restore the GRUB boot entry <strong>without reinstalling anything</strong>.
+No formatting, no fresh installs — just fixing boot logic.</p>
+<p>Final expected result:</p>
+<pre tabindex="0"><code>GRUB Menu
+├── Kali Linux
+└── Windows Boot Manager
+</code></pre><hr>
+<h2 id="step-1--boot-into-kali-live-mode">Step 1 — Boot Into Kali Live Mode<a hidden class="anchor" aria-hidden="true" href="#step-1--boot-into-kali-live-mode">#</a></h2>
+<p>I created/brought my existing <strong>Kali Live USB</strong>, plugged it in, and rebooted.</p>
+<p>I opened the boot menu and this is <strong>important</strong>:</p>
+<p><!-- raw HTML omitted -->I selected the entry that said <code>UEFI: &lt;USB Name&gt;</code> — NOT the legacy one.<!-- raw HTML omitted --></p>
+<p>To confirm I really booted in UEFI mode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls /sys/firmware/efi
+</span></span></code></pre></div><p>If this directory <strong>exists</strong>, I&rsquo;m in UEFI mode ✅
+If not → reboot and select UEFI USB entry ❌</p>
+<hr>
+<h2 id="step-2--identify-my-linux-and-efi-partitions">Step 2 — Identify My Linux and EFI Partitions<a hidden class="anchor" aria-hidden="true" href="#step-2--identify-my-linux-and-efi-partitions">#</a></h2>
+<p>I ran:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo fdisk -l
+</span></span></code></pre></div><p>I found:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Purpose</th>
+          <th>Partition</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Kali Root Filesystem</td>
+          <td><code>/dev/nvme0n1p7</code></td>
+      </tr>
+      <tr>
+          <td>Kali EFI Partition</td>
+          <td><code>/dev/nvme0n1p4</code></td>
+      </tr>
+      <tr>
+          <td>Windows EFI Partition</td>
+          <td><code>/dev/nvme0n1p1</code></td>
+      </tr>
+  </tbody>
+</table>
+<p><!-- raw HTML omitted -->It&rsquo;s critical to identify these correctly.<!-- raw HTML omitted --></p>
+<hr>
+<h2 id="step-3--mount-kali-system-and-enter-it">Step 3 — Mount Kali System and Enter It<a hidden class="anchor" aria-hidden="true" href="#step-3--mount-kali-system-and-enter-it">#</a></h2>
+<p>I mounted my system like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mount /dev/nvme0n1p7 /mnt
+</span></span><span style="display:flex;"><span>sudo mount /dev/nvme0n1p4 /mnt/boot/efi
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i in /dev /dev/pts /proc /sys /run; <span style="color:#66d9ef">do</span> sudo mount --bind $i /mnt$i; <span style="color:#66d9ef">done</span>
+</span></span><span style="display:flex;"><span>sudo chroot /mnt
+</span></span></code></pre></div><p>At this point, I was <strong>inside my installed Kali</strong>.</p>
+<hr>
+<h2 id="step-4--reinstall-grub">Step 4 — Reinstall GRUB<a hidden class="anchor" aria-hidden="true" href="#step-4--reinstall-grub">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>grub-install /dev/nvme0n1
+</span></span><span style="display:flex;"><span>update-grub
+</span></span></code></pre></div><p>When <code>update-grub</code> ran, I got:</p>
+<pre tabindex="0"><code>Found Windows Boot Manager on /dev/nvme0n1p1
+</code></pre><p>Perfect.</p>
+<hr>
+<h2 id="step-5--the-critical-part-i-almost-missed">Step 5 — The Critical Part I Almost Missed<a hidden class="anchor" aria-hidden="true" href="#step-5--the-critical-part-i-almost-missed">#</a></h2>
+<p>When I first tried to restore the boot entry, I got:</p>
+<pre tabindex="0"><code>EFI variables are not supported on this system.
+</code></pre><p>This means <strong>EFI vars weren&rsquo;t mounted</strong>, so I fixed it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+</span></span></code></pre></div><p><!-- raw HTML omitted -->Without this, <code>efibootmgr</code> WILL FAIL.<!-- raw HTML omitted --></p>
+<hr>
+<h2 id="step-6--recreate-the-grub-uefi-boot-entry">Step 6 — Recreate the GRUB UEFI Boot Entry<a hidden class="anchor" aria-hidden="true" href="#step-6--recreate-the-grub-uefi-boot-entry">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -c -d /dev/nvme0n1 -p <span style="color:#ae81ff">4</span> -l <span style="color:#e6db74">&#34;\EFI\kali\grubx64.efi&#34;</span> -L <span style="color:#e6db74">&#34;Kali Linux&#34;</span>
+</span></span></code></pre></div><p>Then I checked:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr
+</span></span></code></pre></div><p>I got:</p>
+<pre tabindex="0"><code>Boot0003* Kali Linux
+Boot0004* Windows Boot Manager
+</code></pre><p>Beautiful.</p>
+<hr>
+<h2 id="step-7--make-kali-grub-boot-first">Step 7 — Make Kali (GRUB) Boot First<a hidden class="anchor" aria-hidden="true" href="#step-7--make-kali-grub-boot-first">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -o 0003,0004
+</span></span></code></pre></div><p>This sets the boot order like:</p>
+<pre tabindex="0"><code>1. Kali (GRUB)
+2. Windows Boot Manager
+</code></pre><hr>
+<h2 id="step-8--reboot-without-usb">Step 8 — Reboot (Without USB)<a hidden class="anchor" aria-hidden="true" href="#step-8--reboot-without-usb">#</a></h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>exit
+</span></span><span style="display:flex;"><span>reboot
+</span></span></code></pre></div><p>GRUB appeared.
+My dual boot was fully back.</p>
+<hr>
+<h2 id="-final-state">✅ Final State<a hidden class="anchor" aria-hidden="true" href="#-final-state">#</a></h2>
+<pre tabindex="0"><code>[UEFI Firmware]
+       |
+       v
++-----------------+
+| GRUB Bootloader |
++-----------------+
+   |          |
+   v          v
+Kali Linux   Windows
+</code></pre><hr>
+<h2 id="-bonus-prevent-this-happening-again">🛡️ Bonus: Prevent This Happening Again<a hidden class="anchor" aria-hidden="true" href="#-bonus-prevent-this-happening-again">#</a></h2>
+<p>Disable Windows Fast Startup (this prevents EFI entries from being overwritten):</p>
+<pre tabindex="0"><code>Control Panel → Power Options → Choose what the power buttons do → Disable Fast Startup
+</code></pre><hr>
+<h2 id="conclusion">Conclusion<a hidden class="anchor" aria-hidden="true" href="#conclusion">#</a></h2>
+<p>I didn’t reinstall anything.
+I didn’t lose data.
+I didn’t break Windows.</p>
+<p>I simply <strong>restored GRUB</strong> the correct way.</p>
+<p>If your system suddenly forgets about Linux — don’t panic.
+Your data is still there.
+You just need to remind your motherboard that Kali exists 😉</p>
+<p>Happy hacking 🐉💻</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/kali-linux/">Kali-Linux</a></li>
+      <li><a href="http://localhost:1313/tags/windows/">Windows</a></li>
+      <li><a href="http://localhost:1313/tags/grub/">Grub</a></li>
+      <li><a href="http://localhost:1313/tags/uefi/">Uefi</a></li>
+      <li><a href="http://localhost:1313/tags/dualboot/">Dualboot</a></li>
+      <li><a href="http://localhost:1313/tags/boot-repair/">Boot-Repair</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">n0rmh3ll</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+</body>
+
+</html>

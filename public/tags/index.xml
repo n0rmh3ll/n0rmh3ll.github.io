@@ -43,5 +43,47 @@
       <guid>http://localhost:1313/tags/tryhackme/</guid>
       <description></description>
     </item>
+    <item>
+      <title>Boot-Repair</title>
+      <link>http://localhost:1313/tags/boot-repair/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/boot-repair/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Dualboot</title>
+      <link>http://localhost:1313/tags/dualboot/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/dualboot/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Grub</title>
+      <link>http://localhost:1313/tags/grub/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/grub/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Kali-Linux</title>
+      <link>http://localhost:1313/tags/kali-linux/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/kali-linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Uefi</title>
+      <link>http://localhost:1313/tags/uefi/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/uefi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows</title>
+      <link>http://localhost:1313/tags/windows/</link>
+      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

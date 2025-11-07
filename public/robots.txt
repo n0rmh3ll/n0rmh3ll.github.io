@@ -1,0 +1,5 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://n0rmh3ll.github.io/sitemap.xml
+Host: https://n0rmh3ll.github.io
