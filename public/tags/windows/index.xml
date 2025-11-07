@@ -6,25 +6,14 @@
     <description>Recent content in Windows on n0rmh3ll</description>
     <generator>Hugo -- 0.152.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 07 Oct 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 07 Nov 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/windows/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Fix Dual Boot After BIOS Update — Restore GRUB (Kali &#43; Windows)</title>
+      <title>How I Recovered My Kali &#43; Windows Dual Boot After a BIOS Update Broke GRUB</title>
       <link>http://localhost:1313/posts/grub-fix-dualboot/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/grub-fix-dualboot/</guid>
-      <description>&lt;hr&gt;
-&lt;h2 id=&#34;-problem-summary&#34;&gt;🧨 Problem Summary&lt;/h2&gt;
-&lt;p&gt;After performing a BIOS/UEFI firmware update, the system started booting &lt;strong&gt;directly into Windows&lt;/strong&gt;. The &lt;strong&gt;GRUB menu disappeared&lt;/strong&gt;, and &lt;strong&gt;Kali Linux no longer appeared in BIOS boot options&lt;/strong&gt;. Only entries visible were:&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;Windows Boot Manager
-EFI PXE Network
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;This happens because &lt;strong&gt;BIOS updates reset UEFI NVRAM boot entries&lt;/strong&gt;, removing GRUB while keeping Windows.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&#34;-goal&#34;&gt;🎯 Goal&lt;/h2&gt;
-&lt;p&gt;Restore &lt;strong&gt;GRUB&lt;/strong&gt; so both operating systems appear on startup:&lt;/p&gt;
-&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;Kali Linux
-Windows Boot Manager
-&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;No data loss • No reinstallation • No overwriting Windows&lt;/p&gt;</description>
+      <description>A complete step-by-step guide to restoring GRUB after a BIOS update removes Kali Linux from boot menu. No data loss. Detailed troubleshooting walkthrough.</description>
     </item>
   </channel>
 </rss>

@@ -6,8 +6,50 @@
     <description>Recent content in Tags on n0rmh3ll</description>
     <generator>Hugo -- 0.152.2</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 06 Nov 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 07 Nov 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Boot-Repair</title>
+      <link>http://localhost:1313/tags/boot-repair/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/boot-repair/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Dualboot</title>
+      <link>http://localhost:1313/tags/dualboot/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/dualboot/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Grub</title>
+      <link>http://localhost:1313/tags/grub/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/grub/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Kali-Linux</title>
+      <link>http://localhost:1313/tags/kali-linux/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/kali-linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Uefi</title>
+      <link>http://localhost:1313/tags/uefi/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/uefi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows</title>
+      <link>http://localhost:1313/tags/windows/</link>
+      <pubDate>Fri, 07 Nov 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/windows/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Active-Directory</title>
       <link>http://localhost:1313/tags/active-directory/</link>
@@ -41,48 +83,6 @@
       <link>http://localhost:1313/tags/tryhackme/</link>
       <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/tags/tryhackme/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Boot-Repair</title>
-      <link>http://localhost:1313/tags/boot-repair/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/boot-repair/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Dualboot</title>
-      <link>http://localhost:1313/tags/dualboot/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/dualboot/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Grub</title>
-      <link>http://localhost:1313/tags/grub/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/grub/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Kali-Linux</title>
-      <link>http://localhost:1313/tags/kali-linux/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/kali-linux/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Uefi</title>
-      <link>http://localhost:1313/tags/uefi/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/uefi/</guid>
-      <description></description>
-    </item>
-    <item>
-      <title>Windows</title>
-      <link>http://localhost:1313/tags/windows/</link>
-      <pubDate>Tue, 07 Oct 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/windows/</guid>
       <description></description>
     </item>
   </channel>
