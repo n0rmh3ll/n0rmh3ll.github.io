@@ -50,6 +50,8 @@
     <loc>http://localhost:1313/tags/tryhackme/</loc>
     <lastmod>2025-11-06T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/</loc>
+  </url><url>
     <loc>http://localhost:1313/categories/</loc>
   </url>
 </urlset>

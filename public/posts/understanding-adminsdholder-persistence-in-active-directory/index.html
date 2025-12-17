@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Understanding AdminSDHolder Persistence in Active Directory | n0rmh3ll</title>
+<meta name="keywords" content="AdminSDHolder, active-directory, SDProp, privilege-escalation, red-team, persistence">
+<meta name="description" content="Deep dive into Active Directory AdminSDHolder and SDprop">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css" integrity="sha256-4V5FDfQXl84mIlf&#43;ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+</head>
+<body id="top">
+    <header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="n0rmh3ll (Alt + H)">n0rmh3ll</a>
+            <div class="logo-switches">
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/" title="Home">
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/posts/" title="Blog">
+                    <span>Blog</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      Understanding AdminSDHolder Persistence in Active Directory
+    </h1>
+    <div class="post-description">
+      Deep dive into Active Directory AdminSDHolder and SDprop
+    </div>
+    <div class="post-meta"><span title='2025-12-17 00:00:00 +0000 UTC'>December 17, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#introduction" aria-label="Introduction">Introduction</a></li>
+                <li>
+                    <a href="#what-are-we-looking-at-" aria-label="What are we looking at ?">What are we looking at ?</a></li>
+                <li>
+                    <a href="#why-this-matters-from-an-attackers-perspective" aria-label="Why This Matters (From an Attacker’s Perspective)">Why This Matters (From an Attacker’s Perspective)</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="introduction">Introduction<a hidden class="anchor" aria-hidden="true" href="#introduction">#</a></h1>
+<p>Active Directory environments are designed with multiple safety mechanisms to prevent accidental or malicious privilege escalation—even by administrators. One such mechanism is <strong>AdminSDHolder</strong>, which quietly enforces strict permissions on high-privilege objects.</p>
+<p>At first glance, this protection may seem like an obstacle. But when understood correctly, it can become a powerful persistence mechanism.</p>
+<h1 id="what-are-we-looking-at-">What are we looking at ?<a hidden class="anchor" aria-hidden="true" href="#what-are-we-looking-at-">#</a></h1>
+<p>Let’s say we already have <strong>Domain Admin</strong> privileges in a domain. At that point, there’s almost nothing we <em>can’t</em> do. Full control, full access.</p>
+<p>So a simple idea comes to mind:<br>
+why not add a local user to the <strong>Domain Admins</strong> group and grant that account <strong>GenericAll</strong> permissions? Sounds perfect, right? Total power, persistent access, and full control over the domain.</p>
+<p>Well… Active Directory has other plans.</p>
+<p>Active Directory has a process <strong>SDProp</strong> which applies the ACL of the AdminSDHolder object to all protected groups and their member users every 60 minutes by default. Since the ACL for AdminSDHolder is designed to be very restrictive, this process normally helps strengthen security.</p>
+<ul>
+<li>So WTH is  this <code>AdminSDHolder</code> ?</li>
+</ul>
+<p><code>AdminSDHolder</code> is a container object that is created in each Active Directory domain. Its ACL is automatically applied to all protected groups in the domain and their members.</p>
+<blockquote>
+<p>In short ; Active Directory regularly  overwrite the changes made to Protected Groups and their members , so no one can change them. This include all “protected” accounts and groups like Domain Admins, Enterprise Admins, Account Operators, Backup Operators etc</p>
+</blockquote>
+<p>So, even if we add our local user <code>xyz</code> into Domain Admins Group and give <code>Full Control</code> to that user. The SDProp will change it back to normal state within 60 mins.</p>
+<p>Give it a thought, What if, instead of changing the protected groups…we change AdminSDHolder itself ?</p>
+<p>We modifying the ACL of <strong>AdminSDHolder</strong> and adding our local user with <strong>Full Control</strong> over AdminSDHolder, Now within an Hour or if we trigger propagation manually we can see that the local member we add have &ldquo;Full control over All the Protected Groups and their members&rdquo;.</p>
+<p>Now that&rsquo;s the real persistence !!</p>
+<h1 id="why-this-matters-from-an-attackers-perspective">Why This Matters (From an Attacker’s Perspective)<a hidden class="anchor" aria-hidden="true" href="#why-this-matters-from-an-attackers-perspective">#</a></h1>
+<p>From a defensive standpoint, AdminSDHolder exists to protect the crown jewels of Active Directory. But from an attacker’s or red teamer’s perspective, it represents a <strong>high-impact, low-noise persistence vector</strong>.</p>
+<p>By the time defenders notice suspicious permissions on protected accounts, SDProp may have already re-applied them—again and again.</p>
+<hr>
+<p>Here are some <strong>good, trusted links</strong> to read more about <strong>AdminSDHolder, SDProp, and persistence</strong></p>
+<p><a href="https://netwrix.com/en/resources/blog/adminsdholder/">https://netwrix.com/en/resources/blog/adminsdholder/</a>
+<a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#protected-accounts-and-groups">https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-groups#protected-accounts-and-groups</a>
+<a href="https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-descriptors">https://learn.microsoft.com/en-us/windows-server/identity/ad-ds/manage/understand-security-descriptors</a>
+<a href="https://adsecurity.org/?p=1906">https://adsecurity.org/?p=1906</a>
+<a href="https://posts.specterops.io/certified-pre-owned-d95910965cd2">https://posts.specterops.io/certified-pre-owned-d95910965cd2</a></p>
+<p>Until next time, Keep Hacking !!</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/adminsdholder/">AdminSDHolder</a></li>
+      <li><a href="http://localhost:1313/tags/active-directory/">Active-Directory</a></li>
+      <li><a href="http://localhost:1313/tags/sdprop/">SDProp</a></li>
+      <li><a href="http://localhost:1313/tags/privilege-escalation/">Privilege-Escalation</a></li>
+      <li><a href="http://localhost:1313/tags/red-team/">Red-Team</a></li>
+      <li><a href="http://localhost:1313/tags/persistence/">Persistence</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">n0rmh3ll</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+</body>
+
+</html>
