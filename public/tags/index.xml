@@ -4,10 +4,59 @@
     <title>Tags on n0rmh3ll</title>
     <link>http://localhost:1313/tags/</link>
     <description>Recent content in Tags on n0rmh3ll</description>
-    <generator>Hugo -- 0.152.2</generator>
+    <generator>Hugo -- 0.157.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 07 Nov 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 11 Mar 2026 23:47:00 +0530</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Active-Directory</title>
+      <link>http://localhost:1313/tags/active-directory/</link>
+      <pubDate>Wed, 11 Mar 2026 23:47:00 +0530</pubDate>
+      <guid>http://localhost:1313/tags/active-directory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>HomeLab</title>
+      <link>http://localhost:1313/tags/homelab/</link>
+      <pubDate>Wed, 11 Mar 2026 23:47:00 +0530</pubDate>
+      <guid>http://localhost:1313/tags/homelab/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Red Team Dairy</title>
+      <link>http://localhost:1313/tags/red-team-dairy/</link>
+      <pubDate>Wed, 11 Mar 2026 23:47:00 +0530</pubDate>
+      <guid>http://localhost:1313/tags/red-team-dairy/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Red Teaming</title>
+      <link>http://localhost:1313/tags/red-teaming/</link>
+      <pubDate>Wed, 11 Mar 2026 23:47:00 +0530</pubDate>
+      <guid>http://localhost:1313/tags/red-teaming/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Windows Server</title>
+      <link>http://localhost:1313/tags/windows-server/</link>
+      <pubDate>Wed, 11 Mar 2026 23:47:00 +0530</pubDate>
+      <guid>http://localhost:1313/tags/windows-server/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>AdminSDHolder</title>
+      <link>http://localhost:1313/tags/adminsdholder/</link>
+      <pubDate>Wed, 17 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/adminsdholder/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Privilege-Escalation</title>
+      <link>http://localhost:1313/tags/privilege-escalation/</link>
+      <pubDate>Wed, 17 Dec 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/privilege-escalation/</guid>
+      <description></description>
+    </item>
     <item>
       <title>Boot-Repair</title>
       <link>http://localhost:1313/tags/boot-repair/</link>
@@ -51,13 +100,6 @@
       <description></description>
     </item>
     <item>
-      <title>Active-Directory</title>
-      <link>http://localhost:1313/tags/active-directory/</link>
-      <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/active-directory/</guid>
-      <description></description>
-    </item>
-    <item>
       <title>Kerberos</title>
       <link>http://localhost:1313/tags/kerberos/</link>
       <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
@@ -65,24 +107,31 @@
       <description></description>
     </item>
     <item>
-      <title>Privilege-Escalation</title>
-      <link>http://localhost:1313/tags/privilege-escalation/</link>
+      <title>Tryhackme</title>
+      <link>http://localhost:1313/tags/tryhackme/</link>
       <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/privilege-escalation/</guid>
+      <guid>http://localhost:1313/tags/tryhackme/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Persistence</title>
+      <link>http://localhost:1313/tags/persistence/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/persistence/</guid>
       <description></description>
     </item>
     <item>
       <title>Red-Team</title>
       <link>http://localhost:1313/tags/red-team/</link>
-      <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/tags/red-team/</guid>
       <description></description>
     </item>
     <item>
-      <title>Tryhackme</title>
-      <link>http://localhost:1313/tags/tryhackme/</link>
-      <pubDate>Thu, 06 Nov 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/tags/tryhackme/</guid>
+      <title>SDProp</title>
+      <link>http://localhost:1313/tags/sdprop/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/tags/sdprop/</guid>
       <description></description>
     </item>
   </channel>

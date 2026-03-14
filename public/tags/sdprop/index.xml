@@ -4,7 +4,7 @@
     <title>SDProp on n0rmh3ll</title>
     <link>http://localhost:1313/tags/sdprop/</link>
     <description>Recent content in SDProp on n0rmh3ll</description>
-    <generator>Hugo -- 0.152.2</generator>
+    <generator>Hugo -- 0.157.0</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 17 Dec 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/tags/sdprop/index.xml" rel="self" type="application/rss+xml" />
@@ -13,7 +13,7 @@
       <link>http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/</link>
       <pubDate>Wed, 17 Dec 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/</guid>
-      <description>Active Directory environments are designed with multiple safety mechanisms to prevent accidental or malicious privilege escalation—even by administrators. One such mechanism is **AdminSDHolder**, which quietly enforces strict permissions on high-privilege object</description>
+      <description>Deep dive into Active Directory AdminSDHolder and SDprop</description>
     </item>
   </channel>
 </rss>

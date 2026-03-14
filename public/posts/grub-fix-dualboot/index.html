@@ -8,7 +8,7 @@
 <title>How I Recovered My Kali &#43; Windows Dual Boot After a BIOS Update Broke GRUB | n0rmh3ll</title>
 <meta name="keywords" content="restore grub, kali dual boot, windows grub missing, fix bootloader, uefi boot repair, kali windows dualboot fix">
 <meta name="description" content="A complete step-by-step guide to restoring GRUB after a BIOS update removes Kali Linux from boot menu. No data loss. Detailed troubleshooting walkthrough.">
-<meta name="author" content="">
+<meta name="author" content="n0rmh3ll">
 <link rel="canonical" href="http://localhost:1313/posts/grub-fix-dualboot/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css" integrity="sha256-4V5FDfQXl84mIlf&#43;ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
@@ -48,6 +48,17 @@
                     <span>Blog</span>
                 </a>
             </li>
+            <li>
+                <a href="https://drive.google.com/file/d/1I6D_gqaVtZqxAjFm8TZw1UGHEFkV8XvL/view?usp=sharing" title="Resume">
+                    <span>Resume</span>&nbsp;
+                    <svg fill="none" shape-rendering="geometricPrecision" stroke="currentColor" stroke-linecap="round"
+                        stroke-linejoin="round" stroke-width="2.5" viewBox="0 0 24 24" height="12" width="12">
+                        <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"></path>
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                    </svg>
+                </a>
+            </li>
         </ul>
     </nav>
 </header>
@@ -62,7 +73,7 @@
     <div class="post-description">
       A complete step-by-step guide to restoring GRUB after a BIOS update removes Kali Linux from boot menu. No data loss. Detailed troubleshooting walkthrough.
     </div>
-    <div class="post-meta"><span title='2025-11-07 00:00:00 +0000 UTC'>November 7, 2025</span>
+    <div class="post-meta"><span title='2025-11-07 00:00:00 +0000 UTC'>November 7, 2025</span>&nbsp;·&nbsp;<span>n0rmh3ll</span>
 
 </div>
   </header> <div class="toc">
@@ -151,15 +162,15 @@ No formatting, no fresh installs — just fixing boot logic.</p>
 <h2 id="step-1--boot-into-kali-live-mode">Step 1 — Boot Into Kali Live Mode<a hidden class="anchor" aria-hidden="true" href="#step-1--boot-into-kali-live-mode">#</a></h2>
 <p>I created/brought my existing <strong>Kali Live USB</strong>, plugged it in, and rebooted.</p>
 <p>I opened the boot menu and this is <strong>important</strong>:</p>
-<p><!-- raw HTML omitted -->I selected the entry that said <code>UEFI: &lt;USB Name&gt;</code> — NOT the legacy one.<!-- raw HTML omitted --></p>
+<p><span style="color:red">I selected the entry that said <code>UEFI: &lt;USB Name&gt;</code> — NOT the legacy one.</span></p>
 <p>To confirm I really booted in UEFI mode:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls /sys/firmware/efi
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>ls /sys/firmware/efi
 </span></span></code></pre></div><p>If this directory <strong>exists</strong>, I&rsquo;m in UEFI mode ✅
 If not → reboot and select UEFI USB entry ❌</p>
 <hr>
 <h2 id="step-2--identify-my-linux-and-efi-partitions">Step 2 — Identify My Linux and EFI Partitions<a hidden class="anchor" aria-hidden="true" href="#step-2--identify-my-linux-and-efi-partitions">#</a></h2>
 <p>I ran:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo fdisk -l
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo fdisk -l
 </span></span></code></pre></div><p>I found:</p>
 <table>
   <thead>
@@ -183,18 +194,18 @@ If not → reboot and select UEFI USB entry ❌</p>
       </tr>
   </tbody>
 </table>
-<p><!-- raw HTML omitted -->It&rsquo;s critical to identify these correctly.<!-- raw HTML omitted --></p>
+<p><span style="color:red">It&rsquo;s critical to identify these correctly.</span></p>
 <hr>
 <h2 id="step-3--mount-kali-system-and-enter-it">Step 3 — Mount Kali System and Enter It<a hidden class="anchor" aria-hidden="true" href="#step-3--mount-kali-system-and-enter-it">#</a></h2>
 <p>I mounted my system like this:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mount /dev/nvme0n1p7 /mnt
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo mount /dev/nvme0n1p7 /mnt
 </span></span><span style="display:flex;"><span>sudo mount /dev/nvme0n1p4 /mnt/boot/efi
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> i in /dev /dev/pts /proc /sys /run; <span style="color:#66d9ef">do</span> sudo mount --bind $i /mnt$i; <span style="color:#66d9ef">done</span>
 </span></span><span style="display:flex;"><span>sudo chroot /mnt
 </span></span></code></pre></div><p>At this point, I was <strong>inside my installed Kali</strong>.</p>
 <hr>
 <h2 id="step-4--reinstall-grub">Step 4 — Reinstall GRUB<a hidden class="anchor" aria-hidden="true" href="#step-4--reinstall-grub">#</a></h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>grub-install /dev/nvme0n1
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>grub-install /dev/nvme0n1
 </span></span><span style="display:flex;"><span>update-grub
 </span></span></code></pre></div><p>When <code>update-grub</code> ran, I got:</p>
 <pre tabindex="0"><code>Found Windows Boot Manager on /dev/nvme0n1p1
@@ -204,26 +215,26 @@ If not → reboot and select UEFI USB entry ❌</p>
 <p>When I first tried to restore the boot entry, I got:</p>
 <pre tabindex="0"><code>EFI variables are not supported on this system.
 </code></pre><p>This means <strong>EFI vars weren&rsquo;t mounted</strong>, so I fixed it:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mount -t efivarfs efivarfs /sys/firmware/efi/efivars
-</span></span></code></pre></div><p><!-- raw HTML omitted -->Without this, <code>efibootmgr</code> WILL FAIL.<!-- raw HTML omitted --></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+</span></span></code></pre></div><p><span style="color:red">Without this, <code>efibootmgr</code> WILL FAIL.</span></p>
 <hr>
 <h2 id="step-6--recreate-the-grub-uefi-boot-entry">Step 6 — Recreate the GRUB UEFI Boot Entry<a hidden class="anchor" aria-hidden="true" href="#step-6--recreate-the-grub-uefi-boot-entry">#</a></h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -c -d /dev/nvme0n1 -p <span style="color:#ae81ff">4</span> -l <span style="color:#e6db74">&#34;\EFI\kali\grubx64.efi&#34;</span> -L <span style="color:#e6db74">&#34;Kali Linux&#34;</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -c -d /dev/nvme0n1 -p <span style="color:#ae81ff">4</span> -l <span style="color:#e6db74">&#34;\EFI\kali\grubx64.efi&#34;</span> -L <span style="color:#e6db74">&#34;Kali Linux&#34;</span>
 </span></span></code></pre></div><p>Then I checked:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr
 </span></span></code></pre></div><p>I got:</p>
 <pre tabindex="0"><code>Boot0003* Kali Linux
 Boot0004* Windows Boot Manager
 </code></pre><p>Beautiful.</p>
 <hr>
 <h2 id="step-7--make-kali-grub-boot-first">Step 7 — Make Kali (GRUB) Boot First<a hidden class="anchor" aria-hidden="true" href="#step-7--make-kali-grub-boot-first">#</a></h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -o 0003,0004
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>efibootmgr -o 0003,0004
 </span></span></code></pre></div><p>This sets the boot order like:</p>
 <pre tabindex="0"><code>1. Kali (GRUB)
 2. Windows Boot Manager
 </code></pre><hr>
 <h2 id="step-8--reboot-without-usb">Step 8 — Reboot (Without USB)<a hidden class="anchor" aria-hidden="true" href="#step-8--reboot-without-usb">#</a></h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>exit
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>exit
 </span></span><span style="display:flex;"><span>reboot
 </span></span></code></pre></div><p>GRUB appeared.
 My dual boot was fully back.</p>
@@ -270,13 +281,9 @@ You just need to remind your motherboard that Kali exists 😉</p>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/">n0rmh3ll</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">n0rmh3ll</a></span> 
 
-    <span>
-        Powered by
-        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
-        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
-    </span>
+
 
 </footer>
 <a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">

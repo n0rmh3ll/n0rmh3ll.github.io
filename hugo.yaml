@@ -7,10 +7,10 @@ theme: PaperMod
 params:
   defaultTheme: dark
   disableThemeToggle: true
+  # Add this block to fix the RSS "Author" error
+  author: "n0rmh3ll"
 
-  homeInfoParams:
-    Title: "n0rmh3ll"
-    Content: "Pentester. Red-Team Operator. I break things and fix them."
+
 
   socialIcons:
     - name: linkedin
@@ -22,6 +22,12 @@ params:
     - name: email
       url: "mailto:rootaswin@gmail.com"
 
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+
 menu:
   main:
     - identifier: home
@@ -31,6 +37,10 @@ menu:
     - identifier: posts
       name: Blog
       url: /posts/
+      weight: 20
+    - identifier: resume
+      name: Resume
+      url: https://drive.google.com/file/d/1I6D_gqaVtZqxAjFm8TZw1UGHEFkV8XvL/view?usp=sharing
       weight: 20
 
 assets:

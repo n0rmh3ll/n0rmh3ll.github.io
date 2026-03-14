@@ -1,0 +1,64 @@
+{{ define "main" }}
+<div class="terminal-404" style="background: #0a0a0a; color: #00ff8c; font-family: 'Courier New', monospace; padding: 40px; border: 1px solid #333; margin-top: 50px; min-height: 420px; position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    
+    <div style="border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; font-size: 0.8rem; opacity: 0.7; display: flex; justify-content: space-between;">
+        <span>[SESSION_ID: {{ now.Unix }}]</span>
+        <span>STATUS: 404_NOT_FOUND</span>
+        <span>TTY: /dev/pts/0</span>
+    </div>
+
+    <div class="terminal-body">
+        <p>> <span style="color: #fff;">nmap -sV --reason -p 80,443 {{ .Permalink }}</span></p>
+        <p>> Scanning target... [DONE]</p>
+        <p>> Analyzing packet headers... [OK]</p>
+        <p>> Routing through local proxy... [DONE]</p>
+        
+        <p style="color: #ff5555; font-weight: bold; margin: 20px 0; background: rgba(255, 85, 85, 0.1); display: inline-block; padding: 5px 10px; border-left: 3px solid #ff5555;">
+            [-] CRITICAL_ERROR: SEGMENTATION_FAULT (Core Dumped)
+        </p>
+        
+        <p>> The requested memory address (URL) could not be mapped to a physical resource.</p>
+        <p>> This incident has been logged in /var/log/audit/audit.log.</p>
+        
+        <div style="margin-top: 40px; border: 1px dashed #333; padding: 15px;">
+            <p style="color: #fff; margin-bottom: 10px;">> Suggested recovery commands:</p>
+            <ul style="list-style: none; padding-left: 0;">
+                <li style="margin-bottom: 8px;">
+                    <span style="color: #888;">#</span> <a href="/" style="color: #00ff8c; text-decoration: none;">cd /home/n0rmh3ll/</a> 
+                    <span style="color: #444; font-size: 0.8rem;">// Return to root</span>
+                </li>
+                <li style="margin-bottom: 8px;">
+                    <span style="color: #888;">#</span> <a href="/posts/" style="color: #00ff8c; text-decoration: none;">ls -R ./content/posts/</a> 
+                    <span style="color: #444; font-size: 0.8rem;">// View available write-ups</span>
+                </li>
+                <li>
+                    <span style="color: #888;">#</span> <span style="color: #888;">history -c && logout</span>
+                    <span style="color: #444; font-size: 0.8rem;">// Abandon session</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <span>n0rmh3ll@arch-loq:~$ </span><span class="cursor" style="display: inline-block; width: 10px; height: 18px; background: #00ff8c; vertical-align: middle; animation: blink 1s infinite;"></span>
+    </div>
+
+    <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); background-size: 100% 3px, 3px 100%; pointer-events: none;"></div>
+</div>
+
+<style>
+    @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+    .terminal-body a:hover {
+        background: #00ff8c;
+        color: #000 !important;
+        padding: 0 5px;
+    }
+    .terminal-body p {
+        margin: 5px 0;
+        line-height: 1.4;
+    }
+</style>
+{{ end }}

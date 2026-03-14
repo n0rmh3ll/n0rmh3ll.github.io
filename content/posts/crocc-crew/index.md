@@ -3,7 +3,7 @@
 title: "Crocc Crew — TryHackMe Detailed Writeup"
 date: 2025-11-06
 draft: false
-tags: ["tryhackme", "active-directory", "kerberos", "privilege-escalation", "red-team"]
+tags: ["tryhackme", "Active Directory", "kerberos", "privilege-escalation", "Red Teaming"]
 showToc: true
 description: "Full detailed walkthrough of the Crocc Crew room on TryHackMe"
 ---

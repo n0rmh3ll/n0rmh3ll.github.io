@@ -3,7 +3,7 @@
 title: "Understanding AdminSDHolder Persistence in Active Directory"
 date: 2025-12-17
 draft: false
-tags: ["AdminSDHolder", "active-directory", "SDProp", "privilege-escalation", "red-team", "persistence"]
+tags: ["AdminSDHolder", "Active Directory", "Red Team Dairy", "privilege-escalation", "Red Teaming"]
 showToc: true
 description: "Deep dive into Active Directory AdminSDHolder and SDprop"
 ---
