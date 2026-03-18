@@ -17,6 +17,9 @@
     <loc>http://localhost:1313/posts/</loc>
     <lastmod>2026-03-11T23:47:00+05:30</lastmod>
   </url><url>
+    <loc>http://localhost:1313/tags/red-team-dairy/</loc>
+    <lastmod>2026-03-11T23:47:00+05:30</lastmod>
+  </url><url>
     <loc>http://localhost:1313/tags/red-teaming/</loc>
     <lastmod>2026-03-11T23:47:00+05:30</lastmod>
   </url><url>
@@ -29,16 +32,7 @@
     <loc>http://localhost:1313/tags/adminsdholder/</loc>
     <lastmod>2025-12-17T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/tags/persistence/</loc>
-    <lastmod>2025-12-17T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://localhost:1313/tags/privilege-escalation/</loc>
-    <lastmod>2025-12-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/red-team/</loc>
-    <lastmod>2025-12-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>http://localhost:1313/tags/sdprop/</loc>
     <lastmod>2025-12-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/understanding-adminsdholder-persistence-in-active-directory/</loc>

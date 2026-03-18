@@ -106,7 +106,7 @@ Select `Add a New Forest` and Name the domain `corp.local` (You can name anythin
 
 Create a new DSRM password and click Install
 
->In **Active Directory**, computers don't directly know where the Domain Controller is. Instead, they uses DNS to discover Domain Controllers and services, so clients must use the DC as their DNS server.
+>The DSRM password serves as a local administrator credential required to access and repair a Domain Controller when Active Directory services are offline or inaccessible. It provides a critical "backdoor" for system recovery and database restoration during emergency maintenance scenarios
 
 Leave everything else by Default and click next
 
@@ -157,7 +157,7 @@ Gateway    : 192.168.122.1
 DNS        : 192.168.122.10
 ```
 
-> We gave DC ip to client DNS because, The client needs the DC's DNS to locate the SRV records required for domain login and authentication.
+> In Active Directory, computers don’t directly know where the Domain Controller is. Instead, they uses DNS to discover Domain Controllers and services, so clients must use the DC as their DNS server.
 
 ![alt text](image-10.png)
 
