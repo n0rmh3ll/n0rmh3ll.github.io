@@ -10,7 +10,7 @@
 <meta name="description" content="Building a cost-effective, high-performance Active Directory Home lab for Red Team research and CRTP practice.">
 <meta name="author" content="n0rmh3ll">
 <link rel="canonical" href="http://localhost:1313/posts/ad-homelab-setup/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.e15e450df41797ce262257fe66ba99943b30f3528a03bc50aef42bcce1ab3585.css" integrity="sha256-4V5FDfQXl84mIlf&#43;ZrqZlDsw81KKA7xQrvQrzOGrNYU=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1ec4d76aea1cd223c988e2632315436b804aa33fd0410953d4db8b4208db5a38.css" integrity="sha256-HsTXauoc0iPJiOJjIxVDa4BKoz/QQQlT1NuLQgjbWjg=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -176,7 +176,7 @@ DNS        : 192.168.122.10
 <p><img alt="alt text" loading="lazy" src="/posts/ad-homelab-setup/image-5.png"></p>
 <p>Create a new DSRM password and click Install</p>
 <blockquote>
-<p>In <strong>Active Directory</strong>, computers don&rsquo;t directly know where the Domain Controller is. Instead, they uses DNS to discover Domain Controllers and services, so clients must use the DC as their DNS server.</p>
+<p>The DSRM password serves as a local administrator credential required to access and repair a Domain Controller when Active Directory services are offline or inaccessible. It provides a critical &ldquo;backdoor&rdquo; for system recovery and database restoration during emergency maintenance scenarios</p>
 </blockquote>
 <p>Leave everything else by Default and click next</p>
 <p>Install and it will force <code>Restart</code></p>
@@ -211,7 +211,7 @@ Subnet     : 255.255.255.0
 Gateway    : 192.168.122.1
 DNS        : 192.168.122.10
 </code></pre><blockquote>
-<p>We gave DC ip to client DNS because, The client needs the DC&rsquo;s DNS to locate the SRV records required for domain login and authentication.</p>
+<p>In Active Directory, computers don’t directly know where the Domain Controller is. Instead, they uses DNS to discover Domain Controllers and services, so clients must use the DC as their DNS server.</p>
 </blockquote>
 <p><img alt="alt text" loading="lazy" src="/posts/ad-homelab-setup/image-10.png"></p>
 <p>Next Rename the PC inside <code>Settings → System → About → Rename this PC</code></p>
